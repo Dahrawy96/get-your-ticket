@@ -9,4 +9,8 @@ const userSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 });
 
+
+
+// Export the User model
+// This makes the User model available for use in other parts of the application
 module.exports = mongoose.model('User', userSchema);
