@@ -1,46 +1,43 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-const cors = require('cors');
-const connectDB = require('./config/db');
+// Bring in all the needed packages
+const express = require('express');       
+const mongoose = require('mongoose');     
+const dotenv = require('dotenv');         
+const cors = require('cors');              
+const connectDB = require('./config/db');  
 
-// Load environment variables from .env file
 dotenv.config();
 
-// Initialize Express app
+// elserver lazem no3o yebaa express>
 const app = express();
 
-// Connect to MongoDB
 connectDB();
 
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cors());
+// Middleware to let Express understand JSON and form data
+app.use(express.json());                         
+app.use(express.urlencoded({ extended: false })); 
+app.use(cors()); // Allow frontend to access the API
 
-// Import routes
 const userRoutes = require('./routes/userRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 
-// Mount routes
-app.use('/api/users', userRoutes);       // User-related routes
-app.use('/api/events', eventRoutes);     // Event-related routes
-app.use('/api/bookings', bookingRoutes); // Booking routes (auth handled per route)
+app.use('/api/users', userRoutes);        
+app.use('/api/events', eventRoutes);      
+app.use('/api/bookings', bookingRoutes);  
 
-// Default test route
+// bengarab haga bas 3ashan el api yebaa shaghala
 app.get('/', (req, res) => {
-  res.send('🎉 API is running...');
+  res.send('API is running...');
 });
 
-// Global error handling middleware
+// A global error handler (runs when something goes wrong)
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Something went wrong!' });
+  console.error(err.stack); // Show error in terminal
+  res.status(500).json({ message: 'Something went wrong!' }); // Send error to user
 });
 
-// Start the server
-const PORT = process.env.PORT || 5000;
+// Start the server 
+const PORT = process.env.PORT || 5000; 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
