@@ -1,18 +1,22 @@
-const { validationResult } = require('express-validator');
-const Event = require('../models/Event');
-const Booking = require('../models/bookingModel');
+const { validationResult } = require("express-validator");
+const Event = require("../models/Event");
+const Booking = require("../models/bookingModel");
 
-// ✅ 1. View Approved Events (Public)
-exports.getApprovedEvents = async (req, res) => {
+exports.getEvents = async (req, res) => {
   try {
-    const events = await Event.find({ status: 'approved' });
+    console.log("Fetching all events with their corresponding status");
+
+    const events = await Event.find({}, "title description date location category ticketPrice totalTickets remainingTickets organizer status");
+
     res.status(200).json(events);
   } catch (err) {
-    res.status(500).json({ message: 'Error fetching events', error: err.message });
+    console.error("Error fetching events:", err.message);
+    res.status(500).json({ message: "Error fetching events", error: err.message });
   }
 };
 
-// ✅ 2. Create Event (Organizer only)
+
+// bas el organizer can create an eventt
 exports.createEvent = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
@@ -30,56 +34,63 @@ exports.createEvent = async (req, res) => {
       totalTickets,
       remainingTickets: totalTickets,
       organizer: req.user.id,
-      status: 'pending',
+      status: "pending",
     });
 
     await event.save();
-    res.status(201).json({ message: 'Event created and pending approval', event });
+    res.status(201).json({ message: "Event created and pending approval", event });
   } catch (err) {
-    res.status(500).json({ message: 'Error creating event', error: err.message });
+    res.status(500).json({ message: "Error creating event", error: err.message });
   }
 };
 
-// ✅ 3. Update Event (Organizer only)
 exports.updateEvent = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
   try {
     const event = await Event.findById(req.params.id);
-    if (!event) return res.status(404).json({ message: 'Event not found' });
+    if (!event) return res.status(404).json({ message: "Event not found" });
 
     if (event.organizer.toString() !== req.user.id) {
-      return res.status(403).json({ message: 'Unauthorized to update this event' });
+      return res.status(403).json({ message: "Unauthorized to update this event" });
     }
 
-    const allowedUpdates = (({ date, location, totalTickets }) => ({ date, location, totalTickets }))(req.body);
+    //bat2qaked en kol el required field/attributes are in the allowed updatess
+    const allowedUpdates = (({ title, location, ticketPrice, date, totalTickets, category, remainingTickets, description }) => 
+      ({ title, location, ticketPrice, date, totalTickets, category, remainingTickets, description }))(req.body);
+
+    console.log("Updating event with:", allowedUpdates); // Debugging log
+
     const updatedEvent = await Event.findByIdAndUpdate(req.params.id, allowedUpdates, { new: true });
 
-    res.status(200).json({ message: 'Event updated', event: updatedEvent });
+    res.status(200).json({ message: "Event updated", event: updatedEvent });
   } catch (err) {
-    res.status(500).json({ message: 'Error updating event', error: err.message });
+    res.status(500).json({ message: "Error updating event", error: err.message });
   }
 };
 
-// ✅ 4. Delete Event (Organizer only)
+
+
+
+// only organizdr can delete events
 exports.deleteEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
-    if (!event) return res.status(404).json({ message: 'Event not found' });
+    if (!event) return res.status(404).json({ message: "Event not found" });
 
     if (event.organizer.toString() !== req.user.id) {
-      return res.status(403).json({ message: 'Unauthorized to delete this event' });
+      return res.status(403).json({ message: "Unauthorized to delete this event" });
     }
 
     await event.deleteOne();
-    res.status(200).json({ message: 'Event deleted successfully' });
+    res.status(200).json({ message: "Event deleted successfully" });
   } catch (err) {
-    res.status(500).json({ message: 'Error deleting event', error: err.message });
+    res.status(500).json({ message: "Error deleting event", error: err.message });
   }
 };
 
-// ✅ 5. Organizer Analytics
+// oragnizerr analytics
 exports.getEventAnalytics = async (req, res) => {
   try {
     const events = await Event.find({ organizer: req.user.id });
@@ -93,37 +104,33 @@ exports.getEventAnalytics = async (req, res) => {
         return {
           eventId: event._id,
           title: event.title,
-          percentageBooked: `${percentBooked}%`
+          percentageBooked: `${percentBooked}%`,
         };
       })
     );
 
     res.status(200).json({ analytics });
   } catch (err) {
-    res.status(500).json({ message: 'Error fetching analytics', error: err.message });
+    res.status(500).json({ message: "Error fetching analytics", error: err.message });
   }
 };
 
-// ✅ 6. Admin Approve or Decline Event
+// only admin can approve or reject event
 exports.updateStatus = async (req, res) => {
   try {
     const { status } = req.body;
-    const validStatuses = ['approved', 'declined'];
+    const validStatuses = ["approved", "declined"];
 
     if (!validStatuses.includes(status)) {
-      return res.status(400).json({ message: 'Invalid status value' });
+      return res.status(400).json({ message: "Invalid status value" });
     }
 
-    const event = await Event.findByIdAndUpdate(
-      req.params.id,
-      { status },
-      { new: true }
-    );
+    const event = await Event.findByIdAndUpdate(req.params.id, { status }, { new: true });
 
-    if (!event) return res.status(404).json({ message: 'Event not found' });
+    if (!event) return res.status(404).json({ message: "Event not found" });
 
     res.status(200).json({ message: `Event ${status}`, event });
   } catch (err) {
-    res.status(500).json({ message: 'Error updating event status', error: err.message });
+    res.status(500).json({ message: "Error updating event status", error: err.message });
   }
 };
