@@ -74,7 +74,11 @@ export default function Navbar() {
           ) : (
             <>
               <span style={{ marginRight: 10 }}>Hello, {user.name}</span>
+              {user.role === 'organizer' && (
+              <Link to="/my-events" style={{ color: 'white', textDecoration: 'none' }}>My Events</Link>
+              )}
               <Link to="/userprofile" style={{ color: 'white', textDecoration: 'none' }}>Profile</Link>
+
               <button
                 onClick={handleLogout}
                 style={{
@@ -111,53 +115,61 @@ export default function Navbar() {
             onClick={() => setMenuOpen(false)}
           >
             Events
-          </Link>
-          {!user ? (
-            <>
-              <Link
-                to="/login"
-                style={{ color: 'white', textDecoration: 'none', padding: '0.5rem 0' }}
-                onClick={() => setMenuOpen(false)}
-              >
-                Login
-              </Link>
-              <Link
-                to="/signup"
-                style={{ color: 'white', textDecoration: 'none', padding: '0.5rem 0' }}
-                onClick={() => setMenuOpen(false)}
-              >
-                Sign Up
-              </Link>
-            </>
-          ) : (
-            <>
-              <Link
-                to="/userprofile"
-                style={{ color: 'white', textDecoration: 'none', padding: '0.5rem 0' }}
-                onClick={() => setMenuOpen(false)}
-              >
-                Profile
-              </Link>
-              <button
-                onClick={() => {
-                  handleLogout();
-                  setMenuOpen(false);
-                }}
-                style={{
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  color: 'white',
-                  cursor: 'pointer',
-                  fontWeight: 'bold',
-                  padding: 0,
-                  textAlign: 'left',
-                }}
-              >
-                Logout
-              </button>
-            </>
-          )}
-        </div>
+          </Link>{!user ? (
+  <>
+    <Link
+      to="/login"
+      style={{ color: 'white', textDecoration: 'none', padding: '0.5rem 0' }}
+      onClick={() => setMenuOpen(false)}
+    >
+      Login
+    </Link>
+    <Link
+      to="/signup"
+      style={{ color: 'white', textDecoration: 'none', padding: '0.5rem 0' }}
+      onClick={() => setMenuOpen(false)}
+    >
+      Sign Up
+    </Link>
+  </>
+) : (
+  <>
+    {user.role === 'organizer' && (
+      <Link
+        to="/my-events"
+        style={{ color: 'white', textDecoration: 'none', padding: '0.5rem 0' }}
+        onClick={() => setMenuOpen(false)}
+      >
+        My Events
+      </Link>
+    )}
+    <Link
+      to="/userprofile"
+      style={{ color: 'white', textDecoration: 'none', padding: '0.5rem 0' }}
+      onClick={() => setMenuOpen(false)}
+    >
+      Profile
+    </Link>
+    <button
+      onClick={() => {
+        handleLogout();
+        setMenuOpen(false);
+      }}
+      style={{
+        backgroundColor: 'transparent',
+        border: 'none',
+        color: 'white',
+        cursor: 'pointer',
+        fontWeight: 'bold',
+        padding: 0,
+        textAlign: 'left',
+      }}
+    >
+      Logout
+    </button>
+  </>
+)}
+   </div>
       )}
 
       {/* CSS for responsiveness */}

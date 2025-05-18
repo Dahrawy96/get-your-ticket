@@ -6,6 +6,7 @@ import SignupPage from './SignupPage';
 import UserProfile from './UserProfile'
 import MyBookings from './MyBookings';
 import EventDetails from './EventDetails';
+import MyEvents from './MyEvents';
 
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
         <Route path="/userprofile" element={<UserProfile />} />
         <Route path="/my-bookings" element={<MyBookings />} />
         <Route path="/events/:id" element={<EventDetails />} />
+        <Route path="/my-events" element={<MyEvents />} />            {/* New route */}
 
       </Routes>
     </Router>
