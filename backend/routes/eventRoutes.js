@@ -83,6 +83,8 @@ router.patch(
   updateStatus
 );
 
+
+
 // View events created by currently logged-in organizer
 router.get(
   "/users/events",

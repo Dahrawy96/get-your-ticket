@@ -143,6 +143,7 @@ exports.updateStatus = async (req, res) => {
       { status },
       { new: true }
     );
+    
 
     if (!event) return res.status(404).json({ message: 'Event not found' });
 
@@ -151,6 +152,8 @@ exports.updateStatus = async (req, res) => {
     res.status(500).json({ message: 'Error updating event status', error: err.message });
   }
 };
+
+
 
 exports.getMyEvents = async (req, res) => {
   try {

@@ -61,3 +61,5 @@ router.put('/users/:id', verifyToken, authorizeRoles('admin', 'user', 'organizer
 router.delete('/users/:id', verifyToken, authorizeRoles('admin', 'organizer'), deleteUser);
 
 module.exports = router;
+
+
