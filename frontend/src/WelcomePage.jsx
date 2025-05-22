@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import Navbar from './NavBar';
 import api from './api';  // Axios instance
 import ticketphoto from './assets/ticketphoto.jpeg';  // Your background image
 import Footer from './Footer';  // Import Footer here
+import { AuthContext } from './AuthContext';
 
 export default function WelcomePage() {
+  const { user, token } = useContext(AuthContext);
   const [events, setEvents] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
@@ -13,7 +15,22 @@ export default function WelcomePage() {
   useEffect(() => {
     async function fetchEvents() {
       try {
-        const res = await api.get('/events');  // Adjust endpoint if needed
+        let res;
+
+        if (user?.role === 'admin') {
+          // Admin sees all events with status
+          res = await api.get('/events/all', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        } else if (user?.role === 'organizer') {
+          // Organizer sees their own events with status
+          res = await api.get('/users/events', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        } else {
+          // Normal users/public see only approved events, no status shown
+          res = await api.get('/events');
+        }
         setEvents(res.data);
         setLoading(false);
       } catch (err) {
@@ -22,9 +39,9 @@ export default function WelcomePage() {
       }
     }
     fetchEvents();
-  }, []);
+  }, [user, token]);
 
-  // Filter events by name or location based on search
+  // Filter events by title or location based on search term
   const filteredEvents = events.filter(event =>
     event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     event.location.toLowerCase().includes(searchTerm.toLowerCase())
@@ -110,17 +127,27 @@ export default function WelcomePage() {
           {filteredEvents.length === 0 && !loading && <p>No events found.</p>}
 
           {filteredEvents.map(event => (
-            <div key={event._id} style={{
-              backgroundColor: 'rgba(0, 0, 0, 0.6)',
-              color: '#ffffff',
-              borderRadius: '8px',
-              padding: '1rem',
-              boxShadow: 'rgba(0,0,0,0.3)',
-              cursor: 'pointer',
-              transition: 'transform 0.2s',
-              textAlign: 'center',
-            }}
-              onClick={() => window.location.href = `/events/${event._id}`}
+            <div
+              key={event._id}
+              style={{
+                backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                color: '#ffffff',
+                borderRadius: '8px',
+                padding: '1rem',
+                boxShadow: 'rgba(0,0,0,0.3)',
+                cursor: 'pointer',
+                transition: 'transform 0.2s',
+                textAlign: 'center',
+              }}
+              onClick={() => {
+                if (user?.role === 'organizer' ) {
+                  window.location.href = `/edit-event/${event._id}`;
+                } else if(user?.role === 'admin') {
+                  window.location.href = `/admin/events`;
+                } else {
+                  window.location.href = `/events/${event._id}`;
+                }
+              }}
               onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
               onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
             >
@@ -129,11 +156,13 @@ export default function WelcomePage() {
               <p>{event.location}</p>
               <p>Price: ${event.ticketPrice}</p>
               <p>Remaining Tickets: {event.remainingTickets}</p>
+              {(user?.role === 'organizer' || user?.role === 'admin') && (
+                <p><strong>Status:</strong> {event.status}</p>
+              )}
             </div>
           ))}
         </div>
 
-        {/* Footer added here */}
         <Footer />
       </div>
     </div>

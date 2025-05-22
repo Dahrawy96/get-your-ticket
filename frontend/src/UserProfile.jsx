@@ -14,6 +14,7 @@ export default function UserProfile() {
     name: '',
     email: '',
   });
+  
 
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
